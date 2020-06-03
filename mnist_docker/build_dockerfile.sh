@@ -1,0 +1,1 @@
+docker build -t kubeflow/examples/mnist:latest .

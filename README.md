@@ -1,4 +1,2 @@
-
-# Kubeflow End to End Example
-
-This Repo is used in my [Blog](https://chanyilin.github.io/kubeflow-e2e-tutorial.html) for kubeflow tutorial including Notebook, tf-operator and KFServing.
+# kubeflow on local k8s cluster
+This Repo is modified from [kubeflow-e2e-example]( https://github.com/kawa23/kubeflow-e2e-example)

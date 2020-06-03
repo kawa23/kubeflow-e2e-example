@@ -2,7 +2,7 @@ apiVersion: kubeflow.org/v1
 kind: TFJob
 metadata:
   name: mnist-train-dist
-  namespace: kubeflow
+  namespace: default
 spec:
   tfReplicaSpecs: # three different roles
     Chief:
@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - command:
-                - /usr/bin/python
+                - /usr/local/bin/python
                 - /opt/model.py # execute the same program, will distinguish the roles in the code using env var.
                 - --tf-model-dir=$(modelDir)
                 - --tf-export-dir=$(exportDir)
@@ -23,20 +23,27 @@ spec:
                 - --tf-learning-rate=$(learningRate)
               env:
                 - name: modelDir
-                  value: gs://${BUCKET}/my-model
+                  value: /mnt/my-model
                 - name: exportDir
-                  value: gs://${BUCKET}/my-model/export
+                  value: /mnt/my-model/export
                 - name: trainSteps
                   value: "200"
                 - name: batchSize
                   value: "100"
                 - name: learningRate
                   value: "0.01"
-              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464 # using the same image
+              image: kubeflow/examples/mnist:latest
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: nfs-pvc
+                  mountPath: "/mnt"
               name: tensorflow
               workingDir: /opt
           restartPolicy: OnFailure
-          serviceAccount: k8s-sa # need SA to access GCS
+          volumes:
+            - name: nfs-pvc
+              persistentVolumeClaim:
+                claimName: kubeflow-e2e-claim
     Ps:
       replicas: 1
       template:
@@ -46,7 +53,7 @@ spec:
         spec:
           containers:
             - command:
-                - /usr/bin/python
+                - /usr/local/bin/python
                 - /opt/model.py
                 - --tf-model-dir=$(modelDir)
                 - --tf-export-dir=$(exportDir)
@@ -55,20 +62,27 @@ spec:
                 - --tf-learning-rate=$(learningRate)
               env:
                 - name: modelDir
-                  value: gs://${BUCKET}/my-model
+                  value: /mnt/my-model
                 - name: exportDir
-                  value: gs://${BUCKET}/my-model/export
+                  value: /mnt/my-model/export
                 - name: trainSteps
                   value: "200"
                 - name: batchSize
                   value: "100"
                 - name: learningRate
                   value: "0.01"
-              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464
+              image: kubeflow/examples/mnist:latest
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: nfs-pvc
+                  mountPath: "/mnt"
               name: tensorflow
               workingDir: /opt
           restartPolicy: OnFailure
-          serviceAccount: k8s-sa
+          volumes:
+            - name: nfs-pvc
+              persistentVolumeClaim:
+                claimName: kubeflow-e2e-claim
     Worker:
       replicas: 2
       template:
@@ -78,7 +92,7 @@ spec:
         spec:
           containers:
             - command:
-                - /usr/bin/python
+                - /usr/local/bin/python
                 - /opt/model.py
                 - --tf-model-dir=$(modelDir)
                 - --tf-export-dir=$(exportDir)
@@ -87,17 +101,24 @@ spec:
                 - --tf-learning-rate=$(learningRate)
               env:
                 - name: modelDir
-                  value: gs://${BUCKET}/my-model
+                  value: /mnt/my-model
                 - name: exportDir
-                  value: gs://${BUCKET}/my-model/export
+                  value: /mnt/my-model/export
                 - name: trainSteps
                   value: "200"
                 - name: batchSize
                   value: "100"
                 - name: learningRate
                   value: "0.01"
-              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464
+              image: kubeflow/examples/mnist:latest
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: nfs-pvc
+                  mountPath: "/mnt"
               name: tensorflow
               workingDir: /opt
           restartPolicy: OnFailure
-          serviceAccount: k8s-sa
+          volumes:
+            - name: nfs-pvc
+              persistentVolumeClaim:
+                claimName: kubeflow-e2e-claim
